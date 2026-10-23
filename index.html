@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>알러지 OX 진단</title>
+    <style>
+        /* 캐주얼한 느낌의 웹페이지 디자인 (CSS) */
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: #F4F7F6; /* 부드러운 파스텔톤 배경 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: #333;
+        }
+
+        .card {
+            background-color: #FFFFFF;
+            width: 90%;
+            max-width: 400px;
+            padding: 40px 20px;
+            border-radius: 24px;
+            box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 1.2rem;
+            color: #888;
+            margin-bottom: 20px;
+        }
+
+        #question-text {
+            font-size: 1.4rem;
+            font-weight: bold;
+            line-height: 1.4;
+            min-height: 80px;
+            margin-bottom: 30px;
+            word-break: keep-all;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 20px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn-o {
+            background-color: #E8F5E9;
+            color: #4CAF50;
+            box-shadow: 0 4px 10px rgba(76, 175, 80, 0.2);
+        }
+
+        .btn-x {
+            background-color: #FFEBEE;
+            color: #F44336;
+            box-shadow: 0 4px 10px rgba(244, 67, 54, 0.2);
+        }
+
+
+		
+		/* 진행 바 스타일 */
+		.progress-container {
+			width: 100%;
+			background-color: #E0E0E0;
+			border-radius: 10px;
+			height: 8px;
+			margin-bottom: 25px;
+			overflow: hidden;
+		}
+
+		.progress-bar {
+			height: 100%;
+			background-color: #4A90E2;
+			width: 16.6%; /* 1단계(1/6) 시작 비율 */
+			border-radius: 10px;
+			transition: width 0.4s ease-in-out; /* 부드럽게 차오르는 효과 */
+		}
+
+		/* 페이드 애니메이션 효과 */
+		.fade-out {
+			opacity: 0;
+			transition: opacity 0.2s ease-out;
+		}
+
+		.fade-in {
+			opacity: 1;
+			transition: opacity 0.2s ease-in;
+		}
+
+		/* 결과창 버튼 그룹 */
+		.result-btn-group {
+			display: flex;
+			gap: 10px;
+			justify-content: center;
+			margin-top: 20px;
+		}
+        .btn-restart {
+            background-color:#4A90E2;
+            color: white;
+            margin-top: 20px;
+            padding: 15px 20px;
+            font-size: 1.1rem;
+            border-radius: 12px;
+            border-radius: 12px;
+			border: none;
+			cursor: pointer;
+        }
+
+		.pulse-icon {
+			font-size: 4rem;
+			margin-bottom: 10px;
+		}
+		.pulse-btn {
+			background-color: #4A90E2;
+			color: white;
+			width: 100%;
+			padding: 20px;
+			border-radius: 50px;
+			animation: pulseEffect 2s infinite;
+		}
+		@keyframes pulseEffect {
+			0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(74, 144, 226, 0.7); }
+			70% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(74, 144, 226, 0); }
+			100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(74, 144, 226, 0); }
+		}
+		/* 맞춤 추천 제품 카드 스타일 */
+		.product-card {
+			background-color: #FFFFFF;
+			border: 2px solid #4A90E2;
+			border-radius: 12px;
+			padding: 20px;
+			margin-top: 20px;
+			text-align: left;
+			position: relative;
+			box-shadow: 0 4px 12px rgba(74, 144, 226, 0.15);
+		}
+
+		.product-badge {
+			position: absolute;
+			top: -12px;
+			left: 20px;
+			background-color: #4A90E2;
+			color: white;
+			font-size: 0.8rem;
+			font-weight: bold;
+			padding: 4px 10px;
+			border-radius: 20px;
+		}
+
+		.product-name {
+			font-size: 1.2rem;
+			font-weight: 800;
+			color: #333;
+			margin-bottom: 8px;
+			margin-top: 5px;
+		}
+
+		.product-desc {
+			font-size: 0.9rem;
+			color: #666;
+			line-height: 1.4;
+			word-break: keep-all;
+		}		
+
+        /* 결과창 요소 숨김 처리 */
+        #result-area { display: none; }
+        .result-title { font-size: 1.5rem; font-weight: 800; color: #4A90E2; margin-bottom: 10px; }
+        .result-desc { font-size: 1rem; color: #555; margin-bottom: 20px; line-height: 1.5; }
+        .result-advice { background: #F9F9F9; padding: 15px; border-radius: 12px; font-size: 0.9rem; font-weight: bold; }
+		/* 제품 홍보 배너 스타일 */
+		.promo-banner {
+			background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
+			color: #006064;
+			padding: 15px;
+			border-radius: 12px;
+			font-size: 0.95rem;
+			font-weight: bold;
+			margin-top: 25px;
+			box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+		}
+		
+		
+		
+		
+		
+    </style>
+</head>
+<body>
+
+    <div class="card">
+	<div id="start-screen">
+        <div class="pulse-icon">🤧</div>
+        <h1 style="font-size: 1.8rem; color: #333; margin-top: 10px;">나는 어떤 알러지가<br>있을까?</h1>
+        <p style="color: #777; margin-bottom: 40px;">간단한 OX 문답으로 알아보는<br>나의 알러지 유형</p>
+        <button class="btn pulse-btn" onclick="startQuiz()">터치해서 시작하기 👆</button>
+    </div>
+        <!-- 퀴즈 진행 영역 -->
+		<!-- quiz-area 수정 -->
+		<div id="quiz-area" style="display: none;">
+			<h1>OX 진단 🤧</h1>
+			<!-- 진행률 바 추가 -->
+			<div class="progress-container">
+				<div class="progress-bar" id="progress-bar"></div>
+			</div>
+			<p id="question-text">질문이 로딩 중입니다...</p>
+			<div class="btn-group">
+				<button class="btn btn-o" onclick="handleAnswer('O')">⭕</button>
+				<button class="btn btn-x" onclick="handleAnswer('X')">❌</button>
+			</div>
+		</div>
+
+		<!-- result-area 수정 -->
+		<div id="result-area">
+			<h1>나의 알러지 유형은?</h1>
+			<div id="result-content"></div>
+		<div class="promo-banner">
+			내 몸이 보내는 예민한 시그널, 더 이상 방치하지 마세요.<br>한 번의 채혈로 끝내는 알레르기 다중진단의 새로운 기준! 🔬<br>PROTIA
+		</div>
+			<!-- 버튼 영역 추가 -->
+			<div class="result-btn-group">
+				<button class="btn btn-restart" onclick="returnToStart()">처음으로</button>
+				
+			</div>
+		</div>	
+    </div>
+
+    <script>
+        // 1. 질문 트리 로직 (여기에 1~6단계 질문을 채워 넣으시면 됩니다)
+        // o: O를 눌렀을 때 이동할 다음 질문 ID 또는 결과(R) ID
+        // x: X를 눌렀을 때 이동할 다음 질문 ID 또는 결과(R) ID
+        const questions = {
+			// [1단계]
+			'Q1': { text: '특정 계절이나 환경에서 재채기를 하거나 원인 모를 피부 과민 반응을 겪은 적이 있나요?', o: 'Q2_1', x: 'Q2_2' },
+
+			// [2단계]
+			'Q2_1': { text: '그 증상이 주로 환절기나 먼지, 동물의 털 등과 접촉할 때 코(재채기/콧물)나 눈(가려움/충혈)을 통해 나타납니까?', o: 'Q3_1', x: 'Q3_2' },
+			'Q2_2': { text: '뚜렷한 알러지 증상은 없지만, 극도로 피곤하거나 스트레스를 받을 때 피부에 원인 모를 두드러기가 난 적이 있나요?', o: 'Q3_3', x: 'Q3_4' },
+
+			// [3단계]
+			'Q3_1': { text: '실내에서 먼지가 쌓인 곳을 청소하거나 옷장을 정리할 때 갑자기 재채기가 연속으로 나거나 숨쉬기가 답답해지나요?', o: 'Q4_1', x: 'Q4_2' },
+			'Q3_2': { text: '우유, 땅콩, 갑각류, 과일 등 특정 음식을 먹은 직후 입술이 붓거나 목 안이 간지러운 느낌을 받은 적이 있나요?', o: 'Q4_3', x: 'Q4_4' },
+			'Q3_3': { text: '금속 액세서리를 착용하거나 새로운 화장품을 사용했을 때, 피부에 닿은 부위만 붉어지고 가려운 증상이 나타난 적 있나요?', o: 'Q4_5', x: 'Q4_6' },
+			'Q3_4': { text: '본인은 증상을 느낀 적이 없더라도, 직계 가족 중에 알레르기 비염, 천식, 아토피 피부염을 앓고 있는 분이 있나요?', o: 'Q4_7', x: 'Q4_8' },
+
+			// [4단계]
+			'Q4_1': { text: '찬 공기를 마시거나 일교차가 클 때, 감기가 아닌데도 기침이 발작적으로 나거나 가슴에서 쌕쌕거리는 소리가 난 적이 있나요?', o: 'Q5_1', x: 'Q5_2' },
+			'Q4_2': { text: '외출 후나 꽃가루가 많이 날리는 시기에 유독 눈이 심하게 붓고 눈물이 흐르는 결막염 증상이 매년 반복되나요?', o: 'Q5_3', x: 'Q5_4' },
+			'Q4_3': { text: '특정 음식을 먹은 후 가려움뿐만 아니라, 메스꺼움, 복통, 설사 등 소화기 쪽에 불편한 증상이 함께 나타난 적이 있나요?', o: 'Q5_5', x: 'Q5_6' },
+			'Q4_4': { text: '식사와 무관하게, 벌레에 물리거나 특정 식물에 스쳤을 때 남들보다 비정상적으로 크게 붓고 열감이 오래간 적이 있나요?', o: 'Q5_7', x: 'Q5_8' },
+			'Q4_5': { text: '땀을 많이 흘리거나 햇빛에 강하게 노출되었을 때, 혹은 갑자기 뜨거운 물로 샤워할 때 피부에 좁쌀 같은 발진이 올라오나요?', o: 'Q5_9', x: 'Q5_10' },
+			'Q4_6': { text: '건조한 겨울철이나 샤워 직후에 피부가 심하게 당기고 하얗게 각질이 일어나 무의식적으로 자주 긁게 되나요?', o: 'Q5_11', x: 'Q5_12' },
+			'Q4_7': { text: '평소 일상엔 지장이 없지만, 미세먼지가 심한 날이나 밀폐된 공간에 오래 있으면 눈이나 목이 쉽게 따가워지나요?', o: 'Q5_13', x: 'Q5_14' },
+			'Q4_8': { text: '지금까지 살면서 약(항생제, 진통제 등)을 먹거나 주사를 맞은 후 두드러기, 호흡 곤란 등을 겪은 적이 단 한 번도 없나요?', o: 'Q5_15', x: 'Q5_16' },
+
+			// [5단계]
+			'Q5_1': { text: '운동을 심하게 한 직후나 밤에 잠자리에 누웠을 때, 기침이 멈추지 않고 심해져서 잠을 깬 적이 있습니까?', o: 'Q6_1', x: 'Q6_2' },
+			'Q5_2': { text: '코막힘이 심해서 자는 동안 입으로 숨을 쉬거나, 아침에 일어났을 때 목이 심하게 건조하고 아픈 날이 잦나요?', o: 'Q6_3', x: 'Q6_4' },
+			'Q5_3': { text: '봄·가을철에 특정 생과일(사과, 복숭아 등)을 먹었을 때 입술이나 목구멍이 따갑고 간지러운 증상이 동반된 적이 있나요?', o: 'Q6_5', x: 'Q6_6' },
+			'Q5_4': { text: '강아지나 고양이 등 반려동물과 같은 공간에 오래 머물렀을 때, 콧물이나 눈 가려움이 평소보다 확연히 심해지나요?', o: 'Q6_7', x: 'Q6_8' },
+			'Q5_5': { text: '특정 음식을 먹고 두드러기와 함께 숨이 가빠지거나 어지러움(아나필락시스)을 느껴 응급실에 가거나 위험을 느낀 적이 있나요?', o: 'Q6_9', x: 'Q6_10' },
+			'Q5_6': { text: '생과일/채소를 먹을 땐 입안이 간지럽지만, 잼이나 통조림처럼 익혀 먹을 때는 아무런 증상이 없습니까?', o: 'Q6_11', x: 'Q6_12' },
+			'Q5_7': { text: '벌에 쏘이거나 개미에 물렸을 때, 물린 부위뿐만 아니라 온몸이 붓거나 호흡 곤란 등 전신 반응으로 번진 적이 있나요?', o: 'Q6_13', x: 'Q6_14' },
+			'Q5_8': { text: '밀가루가 포함된 음식을 먹고 곧바로 걷거나 뛰는 등 운동을 했을 때만 두드러기나 가려움증이 발생한 적이 있나요?', o: 'Q6_15', x: 'Q6_16' },
+			'Q5_9': { text: '스트레스를 심하게 받거나 당황해서 체온이 갑자기 올라갈 때, 피부가 모기 물린 것처럼 따끔거리면서 부어오르나요?', o: 'Q6_17', x: 'Q6_18' },
+			'Q5_10': { text: '고무장갑이나 반창고 등을 피부에 오랫동안 붙이고 있을 때, 접촉한 부위가 붉게 부풀어 오르고 진물이 난 적이 있나요?', o: 'Q6_19', x: 'Q6_20' },
+			'Q5_11': { text: '어렸을 때(영유아기) 무릎 뒤쪽이나 팔꿈치 안쪽 등 살이 접히는 부위에 태열이나 심한 습진(아토피)을 앓은 적이 있나요?', o: 'Q6_21', x: 'Q6_22' },
+			'Q5_12': { text: '특정 세제나 섬유유연제를 듬뿍 사용한 옷을 입었을 때만 유독 피부가 가렵고 붉어지는 것을 느낀 적이 있나요?', o: 'Q6_23', x: 'Q6_24' },
+			'Q5_13': { text: '새집증후군(가구, 페인트 등)이나 강한 향수 냄새를 맡으면 머리가 심하게 아프거나 헛기침이 계속 나옵니까?', o: 'Q6_25', x: 'Q6_26' },
+			'Q5_14': { text: '감기에 걸리면 유독 남들보다 콧물이나 기침이 오래가고(한 달 이상), 쉽게 떨어지지 않는 편입니까?', o: 'Q6_27', x: 'Q6_28' },
+			'Q5_15': { text: '피로가 극도로 누적되거나 수면이 심하게 부족할 때 입술 주위에 포진이 생기거나 피부가 가려운 적이 있나요?', o: 'Q6_29', x: 'Q6_30' },
+			'Q5_16': { text: '페니실린 항생제나 진통소염제 등을 복용했을 때 눈두덩이나 입술이 퉁퉁 부어오른(혈관부종) 적이 있나요?', o: 'Q6_31', x: 'Q6_32' },
+
+			// [6단계 - 최종 질문 및 결과(R) 매칭]
+			'Q6_1': { text: '과거에 천식 진단을 받거나, 숨이 찰 때 사용하는 흡입기(벤톨린 등)를 처방받아 사용해 본 적이 있습니까?', o: 'R5', x: 'R5' },
+			'Q6_2': { text: '기침이 오래갈 때, 가래가 끓기보다 목이 간질간질하면서 마른기침이 2주 이상 멈추지 않는 편입니까?', o: 'R5', x: 'R16' },
+			'Q6_3': { text: '콧물이 누렇고 끈적하기보다는 맑고 투명하게 주르륵 흐르며, 코와 눈 주변이 자주 가렵습니까?', o: 'R3', x: 'R4' },
+			'Q6_4': { text: '찬 바람을 쐬거나 먼지가 많은 곳에 가면 발작적으로 연속해서 재채기가 3~4회 이상 나옵니까?', o: 'R3', x: 'R16' },
+			'Q6_5': { text: '사과, 복숭아 등의 과일 껍질을 깎을 때 과즙이 손이나 입가 피부에 닿기만 해도 붉어지고 가렵습니까?', o: 'R8', x: 'R8' },
+			'Q6_6': { text: '생과일 외에도 땅콩, 호두, 아몬드 같은 견과류를 먹었을 때 목이 조이거나 붓는 느낌을 받은 적이 있습니까?', o: 'R7', x: 'R8' },
+			'Q6_7': { text: '개나 고양이가 핥은 피부 부위가 모기 물린 것처럼 부어오르거나 두드러기가 발생합니까?', o: 'R6', x: 'R6' },
+			'Q6_8': { text: '동물이 있는 공간에서 벗어나 외부로 나오면 1~2시간 내에 콧물이나 가려움증이 씻은 듯이 완전히 사라집니까?', o: 'R6', x: 'R3' },
+			'Q6_9': { text: '식당에 갈 때마다 특정 알러지 유발 식재료가 들어갔는지 꼼꼼히 묻고 확인하는 것이 일상입니까?', o: 'R7', x: 'R7' },
+			'Q6_10': { text: '병원 알레르기 검사를 통해 본인이 어떤 음식에 알레르기가 있는지 정확히 알고 있습니까?', o: 'R7', x: 'R7' },
+			'Q6_11': { text: '생과일/채소를 먹고 입안이 가려울 때, 알레르기 약(항히스타민제)을 먹으면 증상이 금방 가라앉습니까?', o: 'R8', x: 'R8' },
+			'Q6_12': { text: '특정 음식 냄새를 맡거나, 누군가 요리할 때 나는 연기를 마시기만 해도 재채기가 나거나 숨이 답답해집니까?', o: 'R14', x: 'R8' },
+			'Q6_13': { text: '벌레나 곤충에 물릴까 봐 야외 활동을 극도로 꺼리거나, 항상 기피제와 긴 옷을 철저히 준비합니까?', o: 'R13', x: 'R13' },
+			'Q6_14': { text: '모기나 벌레에 물린 부위의 붓기와 열감이 하루 이틀 내에 가라앉지 않고 일주일 이상 퉁퉁 부어있던 적이 있나요?', o: 'R13', x: 'R16' },
+			'Q6_15': { text: '밀가루 외에도 새우, 게 등의 갑각류를 먹고 운동했을 때 두드러기나 호흡 곤란을 겪은 적이 있습니까?', o: 'R9', x: 'R9' },
+			'Q6_16': { text: '식사 여부와 관계없이, 단순히 몸이 더워지거나 땀이 날 정도로 심박수가 올라갈 때만 피부가 가렵고 따갑습니까?', o: 'R11', x: 'R2' },
+			'Q6_17': { text: '매운 음식을 먹거나 화가 나서 얼굴이 붉어질 때도 목이나 가슴 쪽에 좁쌀 같은 두드러기가 올라옵니까?', o: 'R11', x: 'R11' },
+			'Q6_18': { text: '겨울철 차가운 야외에 있다가 따뜻한 실내로 들어갈 때 피부가 갑자기 붉어지고 가려움증이 생깁니까?', o: 'R11', x: 'R2' },
+			'Q6_19': { text: '니켈이 포함된 귀걸이나 목걸이, 바지 금속 단추가 피부에 닿는 부위에 진물이 나거나 가려운 적이 있나요?', o: 'R10', x: 'R10' },
+			'Q6_20': { text: '화장품이나 샴푸, 염색약을 바꾼 뒤 얼굴이나 두피 전체가 심하게 뒤집어져 피부과 치료를 받은 적이 있나요?', o: 'R10', x: 'R16' },
+			'Q6_21': { text: '성인이 된 지금도 스트레스를 받거나 피곤하면, 어릴 적 습진이 있던 그 부위가 다시 가렵고 각질이 일어납니까?', o: 'R12', x: 'R12' },
+			'Q6_22': { text: '피부가 심하게 건조할 때 보습제(로션/크림)를 듬뿍 바르기만 해도 가려움증이 사라지고 피부가 편안해집니까?', o: 'R12', x: 'R12' },
+			'Q6_23': { text: '새 옷을 사서 세탁하지 않고 바로 입으면 피부가 가렵고 따가워서, 반드시 한 번 빨고 입어야 합니까?', o: 'R10', x: 'R14' },
+			'Q6_24': { text: '미세먼지가 심하거나 황사가 있는 날, 외출 후 돌아오면 노출된 피부(얼굴, 목 등)가 유독 가렵거나 붉어집니까?', o: 'R14', x: 'R16' },
+			'Q6_25': { text: '강한 방향제 냄새뿐만 아니라, 담배 연기나 매연을 맡았을 때도 즉각적으로 기침이 나고 목이 아픕니까?', o: 'R14', x: 'R14' },
+			'Q6_26': { text: '환기가 안 되는 지하실이나 오래된 건물(곰팡이가 있는 곳)에 들어가면 코가 막히거나 눈이 따가워집니까?', o: 'R3', x: 'R16' },
+			'Q6_27': { text: '평소 콧물은 안 나더라도, 코가 뒤로 넘어가는 느낌(후비루)이나 목에 이물감이 자주 느껴집니까?', o: 'R3', x: 'R16' },
+			'Q6_28': { text: '환절기마다 감기인 줄 알고 병원에 가면 "알레르기성 비염 증상입니다"라는 이야기를 들은 적이 있습니까?', o: 'R3', x: 'R4' },
+			'Q6_29': { text: '피곤해서 입술 포진 등이 생겼을 때, 평소엔 괜찮던 환경에도 예민하게 재채기나 가려움이 동반됩니까?', o: 'R2', x: 'R2' },
+			'Q6_30': { text: '현재 본인은 스스로 생각하기에 가리는 음식이나 환경이 전혀 없는 건강한 체질이라고 확신하십니까?', o: 'R1', x: 'R16' },
+			'Q6_31': { text: '병원에서 약을 처방받거나 주사를 맞기 전에, 의사나 약사에게 본인의 약물 부작용 경험을 미리 알리는 편입니까?', o: 'R15', x: 'R15' },
+			'Q6_32': { text: '지금까지 살아오면서 단 한 번도 음식, 환경, 약물 등 어떤 요인으로도 알러지 진단이나 약 처방을 받아본 적이 없습니까?', o: 'R1', x: 'R16' }
+		};
+
+        // 2. 최종 결과 카테고리 데이터 (16개 중 일부 예시)
+		const results = {
+			'R1': { 
+				title: '완벽 방어! 무결점 강철 면역 체질 🛡️', 
+				desc: '먼지, 음식, 꽃가루 그 어떤 것에도 끄떡없는 축복받은 체질입니다. 알러지와는 거리가 멀며 쾌적한 일상을 누리고 있습니다.', 
+				advice: '💡 지금의 훌륭한 면역력을 유지하기 위해 규칙적인 식습관과 운동만 챙겨주세요!',
+				product: 'PROTIA Food IgG 패널',
+				productDesc: '알러지는 없지만 왠지 모를 만성 피로가 있다면? 한국인 맞춤 지연성 음식물 과민반응 검사로 숨은 원인을 찾아보세요.'
+			},
+			'R2': { 
+				title: '피로 누적형 가성(가짜) 알러지 🔋', 
+				desc: '근본적인 알러지는 없지만, 극도로 피곤하거나 스트레스를 받을 때 일시적으로 피부가 가렵거나 컨디션이 저하되는 타입입니다.', 
+				advice: '💡 원인은 알러지 물질이 아니라 \'스트레스와 피로\'입니다. 푹 쉬면 증상도 마법처럼 사라집니다.',
+				product: 'PROTIA Food IgG 패널',
+				productDesc: '이유 없이 피곤하고 피부가 가려운 원인이 장 누수에 있을 수 있습니다. 매일 먹는 음식 중 나에게 안 맞는 음식이 있는지 확인해보세요.'
+			},
+			'R3': { 
+				title: '훌쩍훌쩍, 실내 환경 탐지기 🏠', 
+				desc: '집먼지진드기, 곰팡이 등 실내 요인에 반응하는 만성 알레르기성 비염 타입입니다. 환기가 안 된 곳에 가면 코가 먼저 반응합니다.', 
+				advice: '💡 침구류의 정기적인 온수 세탁과 실내 습도 조절(40~50%)이 필수입니다.',
+				product: 'PROTIA Allergy-Q 호흡기 패널 / 종합 패널',
+				productDesc: '집먼지진드기, 곰팡이, 반려동물 털 등 호흡기를 괴롭히는 원인 항원들을 한 번의 채혈로 꼼꼼하게 스크리닝합니다.'
+			},
+			'R4': { 
+				title: '봄/가을을 타는 인간 기상청 🌸', 
+				desc: '꽃가루가 날리거나 찬 바람이 부는 환절기가 되면 어김없이 재채기와 눈 가려움(결막염)이 시작되는 계절성 비염 타입입니다.', 
+				advice: '💡 꽃가루가 심한 날은 외출을 삼가고, 외출 시에는 마스크와 안경 착용이 큰 도움이 됩니다.',
+				product: 'PROTIA Allergy-Q 호흡기 패널 / 종합 패널',
+				productDesc: '나무, 목초, 잡초 등 시기별로 날리는 다양한 꽃가루 항원을 포함해 내 코를 자극하는 정확한 원인을 진단합니다.'
+			},
+			'R5': { 
+				title: '숨이 턱! 기관지 예민보스 💨', 
+				desc: '찬 공기, 먼지, 매연 등에 노출되거나 무리하게 운동했을 때 기침이 발작적으로 나거나 숨소리가 거칠어지는 천식 소인이 있습니다.', 
+				advice: '💡 호흡기가 건조해지지 않도록 따뜻한 물을 자주 마시고, 급격한 온도 변화를 주의하세요.',
+				product: 'PROTIA Allergy-Q 호흡기 / 종합 패널',
+				productDesc: '기관지를 자극하는 미세 항원들을 폭넓게 검사하여 천식 및 호흡기 질환의 근본적인 유발 물질을 찾아냅니다.'
+			},
+			'R6': { 
+				title: '마음으로만 안아주는 랜선 집사 🐾', 
+				desc: '강아지나 고양이 등 동물의 비듬, 침, 털에 반응하는 알러지가 있습니다. 동물이 있는 공간에 가면 증상이 즉각적으로 나타납니다.', 
+				advice: '💡 반려동물과의 직접 접촉을 피하고, 부득이하게 만졌을 때는 즉시 손을 씻고 옷을 털어내야 합니다.',
+				product: 'PROTIA Allergy-Q 호흡기 패널 / 종합 패널',
+				productDesc: '개, 고양이뿐만 아니라 햄스터, 기니피그 등 다양한 털 달린 동물 항원에 대한 과민 반응 여부를 정확히 수치화하여 보여줍니다.'
+			},
+			'R7': { 
+				title: '성분표 정독 필수! 까다로운 미식가 🚫', 
+				desc: '땅콩, 갑각류 등 특정 음식을 먹으면 즉각적으로 반응이 오는 중증 식품 알러지 타입입니다. 이 유형은 고온으로 굽거나 튀겨도 알러지 성분이 파괴되지 않습니다.', 
+				advice: '💡 식당에서 주문 전 알러지 유발 물질이 있는지 반드시 묻고, 교차 오염도 철저히 주의하는 습관이 생명을 지킵니다.',
+				product: 'PROTIA Allergy-Q 음식물 패널 / 종합 패널',
+				productDesc: '한국인이 자주 섭취하는 주요 식재료부터 견과류, 해산물까지 치명적일 수 있는 급성 알러지 원인 식품을 찾아냅니다.'
+			},
+			'R8': { 
+				title: '익힌 건 OK! 생과일 감별사 🍎', 
+				desc: '생과일이나 생채소를 먹었을 때 입술과 목구멍이 간지러운 \'구강알레르기증후군\'입니다. 원인 단백질이 열에 약해 익히면 괜찮아집니다.', 
+				advice: '💡 열을 가해 조리하거나 가공된 형태(통조림, 잼, 주스)로 먹으면 증상 없이 안전하게 즐길 수 있습니다.',
+				product: 'PROTIA Allergy-Q 종합 패널',
+				productDesc: '꽃가루 알러지와 생과일 간의 교차반응을 확인하기 위해, 호흡기 항원과 음식물 항원을 동시에 광범위하게 검사합니다.'
+			},
+			'R9': { 
+				title: '식후엔 절대 안정! 휴식 필수형 🏃‍♂️', 
+				desc: '특정 음식(밀가루 등)을 먹은 것만으로는 괜찮지만, 식후 곧바로 뛰거나 운동을 하면 두드러기 등 알러지 반응이 폭발하는 특이 체질입니다.', 
+				advice: '💡 식사 후 최소 2시간 동안은 격렬한 운동을 피하고 얌전히 소화시키는 것이 가장 중요합니다.',
+				product: 'PROTIA Allergy-Q 음식물 패널 / 종합 패널',
+				productDesc: '운동 유발성 아나필락시스의 주범이 되는 밀, 갑각류 등 특정 식품 항원에 대한 반응 수치를 정밀하게 진단합니다.'
+			},
+			'R10': { 
+				title: '순면과 순금만 허락하는 귀족 피부 ✨', 
+				desc: '니켈 등 금속 장신구, 고무(라텍스), 특정 화장품이나 염색약이 피부에 닿으면 진물이 나고 붉어지는 접촉성 피부염 타입입니다.', 
+				advice: '💡 액세서리는 18K 이상 금이나 알러지 프리 소재를 사용하고, 새로운 화장품은 피부에 미리 테스트하세요.',
+				product: 'PROTIA Allergy-Q 종합 패널',
+				productDesc: '금속 알레르기는 피부과 진료(첩포 검사)가 필요하지만, 라텍스나 일부 화학물질에 대한 알레르기 여부를 검사합니다.'
+			},
+			'R11': { 
+				title: '극강의 온도 감지 센서 🌡️', 
+				desc: '갑자기 열을 받아 땀이 날 때(콜린성) 혹은 차가운 곳에 있다가 따뜻한 곳으로 갈 때(한랭성) 피부가 따갑고 좁쌀 두드러기가 올라옵니다.', 
+				advice: '💡 급격한 체온 변화를 피하고, 덥거나 추운 환경에 점진적으로 몸을 적응시키는 것이 좋습니다.',
+				product: 'PROTIA Allergy-Q 종합 패널',
+				productDesc: '물리적 요인 외에 혈액 내 IgE 수치가 전반적으로 높은지 확인하여, 잠재되어 있는 복합 알러지 성향을 파악합니다.'
+			},
+			'R12': { 
+				title: '촉촉함을 갈망하는 가뭄 피부 💧', 
+				desc: '피부 장벽이 약해 쉽게 건조해지고 각질이 일어나며, 어릴 적 태열이나 아토피 소인을 가지고 있어 자주 가려움을 느끼는 타입입니다.', 
+				advice: '💡 샤워 후 3분 이내에 무향료/고보습 크림을 듬뿍 발라 피부 장벽을 지키는 것이 최고의 치료입니다.',
+				product: 'PROTIA Allergy-Q 아토피 패널',
+				productDesc: '영유아 및 성인 아토피 피부염 악화에 영향을 미치는 주요 식품 항원과 환경 항원을 중점적으로 진단합니다.'
+			},
+			'R13': { 
+				title: '야생이 두려운 자연 경계 태세 🐝', 
+				desc: '벌, 개미 등 곤충에 물리거나 특정 식물에 스치면 남들보다 훨씬 심하게 붓고 호흡 곤란 등 전신 반응이 일어날 수 있는 타입입니다.', 
+				advice: '💡 산행이나 야외 활동 시 반드시 긴 옷을 입고, 벌을 유인하는 짙은 향수나 화려한 옷은 피하세요.',
+				product: 'PROTIA Allergy-Q 종합 패널',
+				productDesc: '곤충독(꿀벌, 말벌 등)을 포함하여 일상에서 마주칠 수 있는 118여 종의 방대한 원인 물질을 한 번에 검사합니다.'
+			},
+			'R14': { 
+				title: '매연/냄새 감별사, 인간 공기청정기 🌬️', 
+				desc: '새 가구 냄새, 독한 향수, 담배 연기 등 특정 화학물질이나 자극적인 냄새에 노출되면 두통, 기침, 콧물이 쏟아지는 과민성 체질입니다.', 
+				advice: '💡 친환경 소재를 애용하고, 새로운 공간에 들어갈 때는 충분한 환기가 되어 있는지 확인하는 것이 좋습니다.',
+				product: 'PROTIA Allergy-Q 종합 패널',
+				productDesc: '단순한 후각 과민인지, 아니면 실제 특정 곰팡이나 먼지 항원에 의한 알러지 반응이 혼재되어 있는지 선별합니다.'
+			},
+			'R15': { 
+				title: '약물 주의보! 꼼꼼한 기록가 💊', 
+				desc: '특정 항생제나 진통소염제 등을 복용했을 때 눈두덩이가 붓거나 두드러기가 난 적이 있는 약물 알러지 타입입니다.', 
+				advice: '💡 병원 진료 시나 약국에서 약을 처방받을 때, 본인의 부작용 경험 약물을 반드시 미리 알리세요.',
+				product: 'PROTIA Allergy-Q 종합 패널',
+				productDesc: '기본적인 면역 과민도가 높은 체질인지 평가하고, 약물 외에 주의해야 할 기타 동반 알러지 항원을 확인합니다.'
+			},
+			'R16': { 
+				title: '언제 터질지 모르는 잠재적 시한폭탄 💣', 
+				desc: '현재 뚜렷한 증상은 없으나, 유전적 소인(가족력)이 있거나 숨은 알러지 염증이 있어 상황에 따라 언제든 알러지가 발현될 수 있는 타입입니다.', 
+				advice: '💡 당장은 괜찮더라도 극도로 피곤하거나 면역력이 떨어지면 알러지가 생길 수 있으니 컨디션 관리에 유의하세요.',
+				product: 'PROTIA Allergy-Q 종합 패널',
+				productDesc: '나도 모르고 있던 내 몸속 알러지 유발 인자가 있는지, 한 번의 다중 스크리닝 검사로 확실하게 점검해 보세요.'
+			}
+		};
+		let currentQuestionId = 'Q1';
+		let currentStep = 1; // 현재 몇 단계인지 추적 (최대 6)
+		let idleTimer;
+		function resetIdleTimer() {
+			clearTimeout(idleTimer);
+			idleTimer = setTimeout(() => {
+				// 결과 창이나 퀴즈 중간에 방치되었을 때 대기 화면으로 복귀
+				if (document.getElementById('start-screen').style.display === 'none') {
+					returnToStart();
+				}
+			}, 30000); // 30초 (30000ms)
+		}
+
+		// 화면 터치 시 타이머 리셋 이벤트 등록
+		document.body.addEventListener('click', resetIdleTimer);
+		document.body.addEventListener('touchstart', resetIdleTimer);
+
+		// 퀴즈 시작 (대기 화면 -> 퀴즈 화면)
+		function startQuiz() {
+			document.getElementById('start-screen').style.display = 'none';
+			document.getElementById('quiz-area').style.display = 'block';
+			document.getElementById('result-area').style.display = 'none';
+			
+			currentQuestionId = 'Q1';
+			currentStep = 1;
+			
+			const progressBar = document.getElementById('progress-bar');
+			progressBar.style.transition = 'none';
+			renderQuestion();
+			setTimeout(() => { progressBar.style.transition = 'width 0.4s ease-in-out'; }, 50);
+		}
+
+		function renderQuestion() {
+			const qText = document.getElementById('question-text');
+			// 부드럽게 나타나는 효과 적용
+			qText.classList.remove('fade-out');
+			qText.classList.add('fade-in');
+			qText.innerText = questions[currentQuestionId].text;
+
+			// 진행 바 게이지 업데이트 (현재 단계 / 총 6단계)
+			const progressPercent = (currentStep / 6) * 100;
+			document.getElementById('progress-bar').style.width = progressPercent + '%';
+		}
+
+		function handleAnswer(answer) {
+			const qText = document.getElementById('question-text');
+			// 텍스트가 사라지는 효과 먼저 주기
+			qText.classList.remove('fade-in');
+			qText.classList.add('fade-out');
+
+			// 애니메이션(0.2초)이 끝난 후 다음 질문 로드
+			setTimeout(() => {
+				const nextNode = answer === 'O' ? questions[currentQuestionId].o : questions[currentQuestionId].x;
+
+				if (nextNode.startsWith('R')) {
+					showResult(nextNode);
+				} else {
+					currentQuestionId = nextNode;
+					currentStep++; // 단계 증가
+					renderQuestion();
+				}
+			}, 200); // css의 transition 시간(0.2s)과 맞춤
+		}
+
+        // 결과창 표시 함수
+		function showResult(resultId) {
+			document.getElementById('quiz-area').style.display = 'none';
+			document.getElementById('result-area').style.display = 'block';
+			
+			const resData = results[resultId];
+			
+			// 기존 제목, 설명, 조언에 '제품 추천 카드' HTML을 추가로 덧붙임
+			document.getElementById('result-content').innerHTML = `
+				<div class="result-title">${resData.title}</div>
+				<div class="result-desc">${resData.desc}</div>
+				<div class="result-advice">${resData.advice}</div>
+				
+				<!-- 추천 제품 카드 렌더링 영역 -->
+				<div class="product-card">
+					<div class="product-badge">맞춤 검사 추천</div>
+					<div class="product-name">${resData.product}</div>
+					<div class="product-desc">${resData.productDesc}</div>
+				</div>
+			`;
+		}
+
+        // 퀴즈 초기화 함수
+		function restartQuiz() {
+			currentQuestionId = 'Q1';
+			currentStep = 1;
+
+			const progressBar = document.getElementById('progress-bar');
+			
+			// 1. 게이지가 거꾸로 줄어드는 애니메이션을 임시로 끕니다.
+			progressBar.style.transition = 'none'; 
+
+			// 2. 화면 전환
+			document.getElementById('quiz-area').style.display = 'block';
+			document.getElementById('result-area').style.display = 'none';
+			
+			// 3. 첫 질문과 진행 바(16.6%) 다시 렌더링
+			renderQuestion();
+
+			// 4. 렌더링이 완료된 직후, 다음 질문을 위해 애니메이션을 다시 켭니다.
+			setTimeout(() => {
+				progressBar.style.transition = 'width 0.4s ease-in-out';
+			}, 50);
+		}
+				
+		function returnToStart() {
+			document.getElementById('quiz-area').style.display = 'none';
+			document.getElementById('result-area').style.display = 'none';
+			document.getElementById('start-screen').style.display = 'block';
+			
+			// 진행바 초기화
+			const progressBar = document.getElementById('progress-bar');
+			progressBar.style.transition = 'none';
+			progressBar.style.width = '16.6%';
+		}
+        // 첫 질문 로드
+        renderQuestion();
+    </script>
+</body>
+</html>
